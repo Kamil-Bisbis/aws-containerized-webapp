@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AWS ECS Web App Deployment</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    /* Basic reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background: radial-gradient(circle at top, #1f3b73 0%, #050816 45%, #020410 100%);
+      color: #f9fafb;
+      line-height: 1.5;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 16px 64px;
+    }
+
+    /* Hero section */
+    .hero {
+      text-align: center;
+      padding: 40px 16px 32px;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #e5e7eb;
+      margin-bottom: 12px;
+    }
+
+    .hero-title {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .hero-highlight {
+      color: #38bdf8;
+    }
+
+    .hero-subtitle {
+      max-width: 600px;
+      margin: 0 auto;
+      font-size: 14px;
+      color: #cbd5f5;
+    }
+
+    .hero-subtitle span {
+      color: #a5b4fc;
+    }
+
+    .hero-pill-row {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 20px;
+      font-size: 11px;
+    }
+
+    .hero-pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      color: #e5e7eb;
+      backdrop-filter: blur(8px);
+    }
+
+    /* Section wrapper */
+    .section {
+      margin-top: 40px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .section-subtitle {
+      font-size: 13px;
+      color: #cbd5f5;
+      margin-bottom: 20px;
+    }
+
+    /* Cards grid */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: rgba(15, 23, 42, 0.95);
+      border-radius: 14px;
+      padding: 16px 16px 14px;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.8);
+    }
+
+    .card-tag {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #9ca3af;
+      margin-bottom: 4px;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #e5e7eb;
+    }
+
+    .card-body {
+      font-size: 13px;
+      color: #d1d5db;
+    }
+
+    .card-body strong {
+      color: #a5b4fc;
+    }
+
+    /* Timeline */
+    .timeline {
+      margin-top: 8px;
+      border-left: 2px solid rgba(148, 163, 184, 0.4);
+      padding-left: 14px;
+    }
+
+    .timeline-item {
+      margin-bottom: 14px;
+      position: relative;
+      padding-left: 4px;
+    }
+
+    .timeline-item::before {
+      content: "";
+      position: absolute;
+      left: -15px;
+      top: 3px;
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: #38bdf8;
+      box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.25);
+    }
+
+    .timeline-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #9ca3af;
+      margin-bottom: 2px;
+    }
+
+    .timeline-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #e5e7eb;
+      margin-bottom: 2px;
+    }
+
+    .timeline-text {
+      font-size: 12px;
+      color: #cbd5f5;
+    }
+
+    /* Architecture list */
+    .arch-list {
+      list-style: none;
+      font-size: 13px;
+      color: #d1d5db;
+      margin-top: 4px;
+    }
+
+    .arch-list li {
+      margin-bottom: 6px;
+    }
+
+    .arch-bullet {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      margin-right: 6px;
+      background: #34d399;
+    }
+
+    /* Footer / GitHub */
+    .footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(148, 163, 184, 0.3);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .footer-link {
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      color: #e5e7eb;
+      font-size: 12px;
+    }
+
+    .footer-link:hover {
+      background: rgba(37, 99, 235, 0.8);
+      border-color: rgba(129, 140, 248, 0.9);
+    }
+
+    @media (max-width: 640px) {
+      .hero-title {
+        font-size: 26px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- Hero -->
+    <header class="hero">
+      <div class="hero-badge">
+        Containerized Web App on AWS
+      </div>
+      <h1 class="hero-title">
+        Deploying a <span class="hero-highlight">Static Web App</span> with Docker, ECR, ECS, and ALB
+      </h1>
+      <p class="hero-subtitle">
+        This project takes a simple HTML site and treats it like a real cloud workload.  
+        The app is containerized with Docker, stored in <span>Amazon ECR</span>, and deployed to  
+        <span>AWS Fargate (ECS)</span> behind an <span>Application Load Balancer</span>.
+      </p>
+
+      <div class="hero-pill-row">
+        <div class="hero-pill">Amazon EC2 (build server)</div>
+        <div class="hero-pill">Docker image + Apache HTTPD</div>
+        <div class="hero-pill">Amazon ECR repo</div>
+        <div class="hero-pill">Amazon ECS Fargate service</div>
+        <div class="hero-pill">Application Load Balancer</div>
+      </div>
+    </header>
+
+    <!-- Services cards -->
+    <section class="section">
+      <h2 class="section-title">AWS Services Used</h2>
+      <p class="section-subtitle">
+        Each service has a clear job. Together they form a simple but realistic container deployment pipeline.
+      </p>
+
+      <div class="card-grid">
+        <article class="card">
+          <div class="card-tag">Step 1</div>
+          <h3 class="card-title">Amazon EC2 + Docker</h3>
+          <p class="card-body">
+            I launched an <strong>Amazon Linux</strong> EC2 instance and installed <strong>Docker</strong>.  
+            On this machine I created a <code>Dockerfile</code> that installs Apache HTTPD  
+            and serves this <code>index.html</code> page, then built an image called  
+            <strong>project-image</strong>.
+          </p>
+        </article>
+
+        <article class="card">
+          <div class="card-tag">Step 2</div>
+          <h3 class="card-title">Amazon ECR (Image Registry)</h3>
+          <p class="card-body">
+            I created a private <strong>Amazon ECR</strong> repository, logged in with the  
+            AWS CLI using an IAM access key, tagged my local Docker image with the ECR URI,  
+            and <strong>pushed</strong> it to the registry as the source of truth for deployments.
+          </p>
+        </article>
+
+        <article class="card">
+          <div class="card-tag">Step 3</div>
+          <h3 class="card-title">ECS Task Definition + Fargate</h3>
+          <p class="card-body">
+            I defined an <strong>ECS task definition</strong> that pulls the ECR image,  
+            runs the Apache container, and exposes <strong>port 80</strong>.  
+            The compute type is <strong>AWS Fargate</strong>, which means the containers  
+            run on serverless infrastructure instead of manual EC2 instances.
+          </p>
+        </article>
+
+        <article class="card">
+          <div class="card-tag">Step 4</div>
+          <h3 class="card-title">Application Load Balancer</h3>
+          <p class="card-body">
+            I created an <strong>Application Load Balancer</strong> that listens on HTTP port 80  
+            and forwards requests to a target group mapped to the ECS service.  
+            With multiple tasks running, the ALB can balance traffic across containers  
+            and keep the app available if one task fails.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <!-- Timeline -->
+    <section class="section">
+      <h2 class="section-title">Deployment Timeline</h2>
+      <p class="section-subtitle">
+        High level view of the steps I followed from local HTML file to a fully managed container service on AWS.
+      </p>
+
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-label">Phase 1</div>
+          <div class="timeline-title">Local project setup</div>
+          <div class="timeline-text">
+            Wrote a static <code>index.html</code> landing page and created a <code>Dockerfile</code>  
+            that installs Apache HTTPD on Rocky Linux and serves the site on port 80.
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-label">Phase 2</div>
+          <div class="timeline-title">Image build on EC2</div>
+          <div class="timeline-text">
+            Connected to the EC2 instance with SSH, installed Docker, and ran  
+            <code>docker build -t project-image .</code> to create the container image for the app.
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-label">Phase 3</div>
+          <div class="timeline-title">Push to Amazon ECR</div>
+          <div class="timeline-text">
+            Created an ECR repository, logged in using <code>aws ecr get-login-password</code>,  
+            tagged the image with the ECR URI, and pushed it so ECS can pull it on demand.
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-label">Phase 4</div>
+          <div class="timeline-title">ECS service with Fargate tasks</div>
+          <div class="timeline-text">
+            Created an ECS cluster and service using Fargate, based on the task definition.  
+            Set the desired count to 2 tasks so the application runs in multiple Availability Zones.
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-label">Phase 5</div>
+          <div class="timeline-title">Expose through Application Load Balancer</div>
+          <div class="timeline-text">
+            Attached the service to an Application Load Balancer listener on port 80,  
+            so users hit a single DNS name and the ALB routes requests to the healthy tasks.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Architecture at a glance -->
+    <section class="section">
+      <h2 class="section-title">Architecture at a Glance</h2>
+      <p class="section-subtitle">
+        Simple, container focused, and production inspired.
+      </p>
+
+      <ul class="arch-list">
+        <li>
+          <span class="arch-bullet"></span>
+          Static HTML page served by <strong>Apache HTTPD</strong> inside a Docker container.
+        </li>
+        <li>
+          <span class="arch-bullet"></span>
+          Container image stored in a private <strong>Amazon ECR</strong> repository.
+        </li>
+        <li>
+          <span class="arch-bullet"></span>
+          <strong>ECS Fargate</strong> runs 2 copies of the container across multiple subnets.
+        </li>
+        <li>
+          <span class="arch-bullet"></span>
+          An <strong>Application Load Balancer</strong> listens on port 80 and forwards traffic  
+          to the ECS tasks through a target group with health checks.
+        </li>
+        <li>
+          <span class="arch-bullet"></span>
+          All traffic flows through security groups that control HTTP and SSH access.
+        </li>
+      </ul>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div>
+        Built as a learning project to practice containerization, AWS ECR, ECS Fargate, and ALB.
+      </div>
+      <div>
+        <!-- Replace the href with your real GitHub repo link -->
+        <a href="https://github.com/your-username/your-repo" class="footer-link" target="_blank" rel="noopener noreferrer">
+          View source on GitHub
+        </a>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
